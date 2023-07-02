@@ -51,6 +51,7 @@ int main() {
 }
 
 void print_solution() {
+  cout << "Objective value: " << max_score << endl;
   cout << N << endl;
   for (int i = 0; i < N; i++)
     for (int k = 0; k < K; k++)
@@ -63,7 +64,6 @@ void print_solution() {
       if (teacher_assignment[i][k] == 1)
         cout << k + 1 << " ";
   cout << endl;
-  cout << max_score << endl;
 }
 
 int calc_score() {
