@@ -55,26 +55,16 @@ def input_data():
     test_case_6, test_case_7, test_case_8, test_case_9, test_case_10 = link_to_medium_input()
     test_case_11, test_case_12, test_case_13, test_case_14, test_case_15 = link_to_large_input()
     test_case_16, test_case_17, test_case_18, test_case_19, test_case_20 = link_to_extra_large_input()
-    input.append(test_case_1)
-    input.append(test_case_2)
-    input.append(test_case_3)
-    input.append(test_case_4)
-    input.append(test_case_5)
-    input.append(test_case_6)
-    input.append(test_case_7)
-    input.append(test_case_8)
-    input.append(test_case_9)
-    input.append(test_case_10)
-    input.append(test_case_11)
-    input.append(test_case_12)
-    input.append(test_case_13)
-    input.append(test_case_14)
-    input.append(test_case_15)
-    input.append(test_case_16)
-    input.append(test_case_17)
-    input.append(test_case_18)
-    input.append(test_case_19)
-    input.append(test_case_20)
+    input = [test_case_1, test_case_2, test_case_3, test_case_4, test_case_5, test_case_6, 
+             test_case_7, test_case_8, test_case_9, test_case_10, test_case_11, test_case_12, 
+             test_case_13, test_case_14, test_case_15, test_case_16, test_case_17, test_case_18,
+             test_case_19, test_case_20]
+    # check if not win32, add . to the path and convert to linux path
+    if sys.platform != 'win32':
+        for i in range(len(input)):
+            input[i] = '..\\' + input[i]
+            input[i] = input[i].replace('\\', '/')
+        
     return input
 
 data_input = input_data()
