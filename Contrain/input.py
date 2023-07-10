@@ -48,6 +48,14 @@ def link_to_extra_large_input():
     test_case_5 = 'Dataset\Extra-large\input_50_24_16.txt'
     return test_case_1, test_case_2, test_case_3, test_case_4, test_case_5
 
+def link_to_erp_input():
+    text = 'Dataset\Test_ERP\input'
+    testcase = []
+    for i in range(1, 11):
+        temp = text + str(i) + '.txt'
+        testcase.append(temp)
+    return testcase
+
 
 def input_data():
     input = []
@@ -55,10 +63,14 @@ def input_data():
     test_case_6, test_case_7, test_case_8, test_case_9, test_case_10 = link_to_medium_input()
     test_case_11, test_case_12, test_case_13, test_case_14, test_case_15 = link_to_large_input()
     test_case_16, test_case_17, test_case_18, test_case_19, test_case_20 = link_to_extra_large_input()
+    testcase = link_to_erp_input()
+
     input = [test_case_1, test_case_2, test_case_3, test_case_4, test_case_5, test_case_6, 
              test_case_7, test_case_8, test_case_9, test_case_10, test_case_11, test_case_12, 
              test_case_13, test_case_14, test_case_15, test_case_16, test_case_17, test_case_18,
              test_case_19, test_case_20]
+    for case_erp in testcase:
+        input.append(case_erp)
     # check if not win32, add . to the path and convert to linux path
     if sys.platform != 'win32':
         for i in range(len(input)):
@@ -67,4 +79,8 @@ def input_data():
         
     return input
 
+# link_to_erp_input()
+
 data_input = input_data()
+
+print(data_input)

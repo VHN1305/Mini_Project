@@ -2,7 +2,24 @@ from ortools.sat.python import cp_model
 import sys
 from input import read_input, data_input
 
-sys.stdin = open(data_input[0], 'r')
+sys.stdin = open(data_input[4], 'r')
+
+def read_input():
+    num_thesises, num_teachers, num_councils = map(int, input().split())
+
+    a, b, c, d, e, f = map(int, input().split())
+    s, g, q = [], [], []
+    for _ in range(num_thesises):
+        row = list(map(int, input().split()))
+        s.append(row)
+
+    for _ in range(num_thesises):
+        row = list(map(int, input().split()))
+        g.append(row)
+
+    q = list(map(int, input().split()))
+
+    return num_thesises, num_teachers, num_councils, a, b, c, d, e, f, s, g, q
 
 model = cp_model.CpModel()
 num_thesises, num_teachers, num_councils, a, b, c, d, e, f, s, g, q = read_input()
@@ -113,14 +130,15 @@ model.Maximize(sum(obj))
 solver = cp_model.CpSolver()
 solver.Solve(model)
 
-print("Optimal value: ", solver.ObjectiveValue())
-print()
+# print("Optimal value: ", solver.ObjectiveValue())
+print(num_thesises)
 for i in range(num_thesises):
     for j in range(num_councils):
         if solver.Value(h[i][j]) == 1:
-            print(f"Thesis {i + 1} is assigned to council {j + 1}")
+            print(j+1, end=' ')
 print()
+print(num_teachers)
 for i in range(num_teachers):
     for j in range(num_councils):
         if solver.Value(p[i][j]) == 1:
-            print(f"Teacher {i + 1} is assigned to council {j + 1}")
+            print(j+1, end=' ')
