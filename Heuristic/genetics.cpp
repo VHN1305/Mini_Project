@@ -1,8 +1,17 @@
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <random>
+#include <string>
+#include <vector>
+
 #define MAX 1000
-#define MIN_RUNNING_TIME 10 // Run at least 10 seconds, if not found feasible(chap nhan dc) solution then continue to run
-#define POPULATION_SIZE 100  // Sl quan the
-#define MUTATION_RATE 0.05 // Dot bien
+#define MIN_RUNNING_TIME                                                       \
+  15 // Run at least 10 seconds, if not found feasible(chap nhan dc) solution
+     // then continue to run
+#define POPULATION_SIZE 6   // Sl quan the
+#define MUTATION_RATE 0.005 // Dot bien
 using namespace std;
 void input();
 int *gen_chromosome();
@@ -17,12 +26,13 @@ public:
   int thesis[MAX];
   int teacher[MAX];
   int fitness;
-  Assignment(int chromosome[]);
+  int generation;
+  Assignment(int chromosome[], int generation);
   int cal_fitness();
   int check_valid();
-  Assignment mate(Assignment parent2);
+  Assignment mate(Assignment parent2, int generation);
 };
-Assignment::Assignment(int chromosome[]) {
+Assignment::Assignment(int chromosome[], int generation) {
   for (int i = 0; i < N; i++) {
     this->thesis[i] = chromosome[i];
   }
@@ -30,10 +40,12 @@ Assignment::Assignment(int chromosome[]) {
     this->teacher[i] = chromosome[N + i];
   }
   this->fitness = cal_fitness();
+  this->generation = generation;
 }
 int Assignment::cal_fitness() {
-  if (check_valid() < 0) {
-    return check_valid();
+  int valid_score = check_valid();
+  if (valid_score < 0) {
+    return valid_score;
   }
   int score = 0;
   for (int i = 0; i < N; i++) {
@@ -46,7 +58,6 @@ int Assignment::cal_fitness() {
       score += teacher_thesis_similarity[i][j] * (thesis[i] == teacher[j]);
     }
   }
-
   return score;
 }
 int Assignment::check_valid() {
@@ -65,6 +76,21 @@ int Assignment::check_valid() {
   for (int i = 0; i < M; i++) {
     teacher_count[teacher[i] - 1]++;
   }
+  if (b == N / K) {
+    if (*max_element(thesis_count, thesis_count + K) -
+            *min_element(thesis_count, thesis_count + K) >
+        1) {
+      temp -= 100 * abs(N / K - *max_element(thesis_count, thesis_count + K));
+    }
+  }
+  if (d == M / K) {
+    if (*max_element(teacher_count, teacher_count + K) -
+            *min_element(teacher_count, teacher_count + K) >
+        1) {
+      temp -= 100 * abs(M / K - *max_element(teacher_count, teacher_count + K));
+    }
+  }
+
   for (int i = 0; i < K; i++) {
     // Thesis count in each group must be in range [a, b]
 
@@ -82,7 +108,6 @@ int Assignment::check_valid() {
     for (int j = i + 1; j < N; j++) {
       if ((thesis[i] == thesis[j]) && (thesis_similarity[i][j] < e)) {
         temp -= 1;
-        break;
       }
     }
   }
@@ -91,7 +116,6 @@ int Assignment::check_valid() {
     for (int j = 0; j < M; j++) {
       if ((thesis[i] == teacher[j]) && (teacher_thesis_similarity[i][j] < f)) {
         temp -= 1;
-        break;
       }
     }
   }
@@ -100,13 +124,17 @@ int Assignment::check_valid() {
 }
 // sort by fitness
 bool operator<(const Assignment &a, const Assignment &b) {
+  if (a.fitness == b.fitness) {
+    return a.generation > b.generation;
+  }
   return a.fitness > b.fitness;
 }
-Assignment Assignment::mate(Assignment parent2) {
+Assignment Assignment::mate(Assignment parent2, int generation) {
   int *child_chromosome = new int[N + M];
   static std::random_device rd;
   static std::mt19937 gen(rd());
   std::uniform_int_distribution<int> distribution(0, 1);
+  std::uniform_real_distribution<double> distribution2(0, 1);
   for (int i = 0; i < N; i++) {
     if (distribution(gen)) {
       child_chromosome[i] = this->thesis[i];
@@ -122,12 +150,15 @@ Assignment Assignment::mate(Assignment parent2) {
     }
   }
   // Randomly mutate some genes
+  int mutation_rate;
   for (int i = 0; i < N + M; i++) {
-    if (rand() % 100 < MUTATION_RATE) {
+    // mutation_rate =
+    //     (parent2.fitness >= -101) ? MUTATION_RATE / 2 : MUTATION_RATE;
+    if (distribution2(gen) < MUTATION_RATE) {
       child_chromosome[i] = rand() % K + 1;
     }
   }
-  return Assignment(child_chromosome);
+  return Assignment(child_chromosome, generation);
 }
 void allocate() {
   thesis_similarity = new int *[N];
@@ -141,7 +172,9 @@ void allocate() {
   advisors = new int[N];
 }
 void input() {
-  freopen("input.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
   cin >> N >> M >> K;
   cin >> a >> b >> c >> d >> e >> f;
   allocate();
@@ -181,7 +214,7 @@ int main() {
   vector<Assignment> population;
 
   for (int i = 0; i < POPULATION_SIZE; i++) {
-    population.push_back(Assignment(gen_chromosome()));
+    population.push_back(Assignment(gen_chromosome(), generation));
   }
   sort(population.begin(), population.end());
   int max_fitness = 0;
@@ -205,7 +238,8 @@ int main() {
       while (parent1 == parent2) {
         parent2 = rand() % POPULATION_SIZE / 2;
       }
-      new_population.push_back(population[parent1].mate(population[parent2]));
+      new_population.push_back(
+          population[parent1].mate(population[parent2], generation));
     }
     population = new_population;
     generation++;
@@ -213,17 +247,17 @@ int main() {
     if (population[0].fitness > max_fitness) {
       max_fitness = population[0].fitness;
     }
-    // Print the debug info
+    // // Print the debug info
     cout << "Generation: " << generation << endl;
     cout << "Fitness: " << population[0].fitness << endl;
     cout << "Time: " << duration << endl;
-    for (int i = 0; i < N; i++) {
-      cout << population[0].thesis[i] << " ";
-    }
-    cout << endl;
-    for (int i = 0; i < M; i++) {
-      cout << population[0].teacher[i] << " ";
-    }
+    // for (int i = 0; i < N; i++) {
+    //   cout << population[0].thesis[i] << " ";
+    // }
+    // cout << endl;
+    // for (int i = 0; i < M; i++) {
+    //   cout << population[0].teacher[i] << " ";
+    // }
   }
   // print the best assignment
   cout << N << endl;
